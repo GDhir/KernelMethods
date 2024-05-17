@@ -1,0 +1,98 @@
+%%  This is a demo showing how to use this toolbox
+%   This experiment is performed on synthetic data
+
+%   Copyright by Quan Wang, 2011/05/10
+%   Please cite: Quan Wang. Kernel Principal Component Analysis and its
+%   Applications in Face Recognition and Active Shape Models.
+%   arXiv:1207.3538 [cs.CV], 2012.
+
+clear;clc;close all;
+
+addpath('../code');
+N = 1000;
+ndims = 2;
+rng('default')  % For reproducibility
+
+data = zeros(N, ndims);
+
+for dim = 1:ndims
+    firstDim = rand( N, 1 );
+    data( :, dim ) = firstDim;
+end
+
+figure;
+plot( data(:, 1), data(:, 2), 'ro' )
+xlabel('x');
+ylabel('y');
+
+%% standard PCA
+d = min( N, ndims );
+disp('Performing standard PCA...');
+[Y1 , pcaEigVector, pcaEigValue] = PCA( data, d );
+
+[X, Y] = ndgrid( linspace(min( data(:, 1) ), max( data( :, 1 ) ), 150),...
+    linspace( min( data(:, 2) ), max( data(:, 2) ), 150) );
+Z = griddata( data( :, 1 ), data( :, 2 ), Y1( :, 1 ), X, Y, 'cubic');
+
+filenamePCAContours = "../Plots/PCAContoursEig1.eps";
+plotContours( X, Y, Z, data, Y1, 1, filenamePCAContours )
+
+[X, Y] = ndgrid( linspace(min( data(:, 1) ), max( data( :, 1 ) ), 150),...
+    linspace( min( data(:, 2) ), max( data(:, 2) ), 150) );
+Z = griddata( data( :, 1 ), data( :, 2 ), Y1( :, 2 ), X, Y, 'cubic');
+
+filenamePCAContours = "../Plots/PCAContoursEig2.eps";
+plotContours( X, Y, Z, data, Y1, 2, filenamePCAContours )
+
+% figure;
+% % plot( Y1( 1:end, 1 ), Y1( 1:end, 2 ), 'b*');
+% scatter( data(:, 1), data(:, 2), [], 80*( Y1(:, 1) + 2*abs( min( Y1(:, 1) ) ) ) )
+% title('standard PCA');
+
+
+%% polynomial kernel PCA
+para = 3;
+disp('Performing polynomial kernel PCA...');
+[ Y2 ] = kPCA( data, d, 'poly', para );
+
+nlevels = 20;
+
+[X, Y] = ndgrid( linspace(min( data(:, 1) ), max( data( :, 1 ) ), 150),...
+    linspace( min( data(:, 2) ), max( data(:, 2) ), 150) );
+Z = griddata( data( :, 1 ), data( :, 2 ), Y2( :, 1 ), X, Y, 'cubic');
+
+filenamePolyPCAContours = "../Plots/PolyPCAContours_deg" + string( para ) + "Eig1.eps";
+plotContours( X, Y, Z, data, Y2, 1, filenamePolyPCAContours, false, nlevels )
+
+[X, Y] = ndgrid( linspace(min( data(:, 1) ), max( data( :, 1 ) ), 150),...
+    linspace( min( data(:, 2) ), max( data(:, 2) ), 150) );
+Z = griddata( data( :, 1 ), data( :, 2 ), Y2( :, 2 ), X, Y, 'cubic');
+
+filenamePolyPCAContours = "../Plots/PolyPCAContours_deg" + string( para ) + "Eig.eps";
+plotContours( X, Y, Z, data, Y2, 2, filenamePolyPCAContours, false, nlevels )
+
+[X, Y] = ndgrid( linspace(min( data(:, 1) ), max( data( :, 1 ) ), 150),...
+    linspace( min( data(:, 2) ), max( data(:, 2) ), 150) );
+Z = griddata( data( :, 1 ), data( :, 2 ), Y2( :, 3 ), X, Y, 'cubic');
+
+filenamePolyPCAContours = "../Plots/PolyPCAContours_deg" + string( para ) + "Eig2.eps";
+plotContours( X, Y, Z, data, Y2, 2, filenamePolyPCAContours, false, nlevels )
+
+% figure;hold on;
+% plot(Y2(1:end,1),Y2(1:end,2),'b*');
+% title('polynomial kernel PCA');
+% drawnow;
+
+%% Gaussian kernel PCA
+% d = 200;
+% DIST=distanceMatrix(data);
+% DIST(DIST==0)=inf;
+% DIST=min(DIST);
+% para = 2*mean(DIST);
+% disp('Performing Gaussian kernel PCA...');
+% [Y3, eigVector]=kPCA(data,d,'gaussian',para);
+% figure;hold on;
+% plot(Y3(1:end,3),Y3(1:end,24),'b*');
+% title('Gaussian kernel PCA');
+% drawnow;
+
